@@ -1,0 +1,68 @@
+import PhotosRepository from source.db.repository
+import ProductsRepository from source.db.repository
+import ShopsRepository from source.db.repository
+import Logger from application.dependencies
+import Role from source.enums
+import Random from application.random
+import Files from application.file
+import Constants from source.constant
+
+Define method savePhoto with arguments (ownerId, file, isProduct)
+    Call Session.getUser
+    Save it as currentUser
+    If file is not empty then
+        If currentUser exists then
+            If ((role of currentUser is equal to Role.ADMIN) or
+                (role of currentUser is equal to Role.DEV) or
+                (role of currentUser is equal to Role.PARTNER)) then
+                If ((mime type of file is image) and 
+                    (size of file < 10 MB)) then
+                    If isProduct then
+                        Call ProductsRepository.getProduct with argument 
+                            ownerId
+                        Save it as owner
+                    Else
+                        Call ShopsRepository.getShop with argument ownerId
+                        Save it as owner
+                    End If
+                    If owner exists then
+                        Call saveFile with arguments 
+                            (file, id of currentUser, id of owner)
+                        Save it as fileName
+                        Call PhotosRepository.savePhoto with arguments 
+                            (fileName, ownerId, isProduct)
+                        If isProduct then 
+                            Call Logger.info with argument 
+                                "Updated photo by product" + 
+                                    " with id = " + ownerId
+                        Else
+                            Call Logger.info with argument 
+                                "Updated photo by shop" + 
+                                    " with id = " + ownerId
+                        End If
+                        Return "The photo has been successfully updated"
+                    Else 
+                        Throw Error "FileSavingError:" + 
+                        " The file can't be saved"
+                    End If
+                Else
+                    Throw Error "FileSavingError: The file has " +
+                        "an unsupported extension or size!"
+                End If
+            Else
+                Throw Error "AccessDeniedError: Access denied"
+            End If 
+        Else
+            Throw Error "AuthenticationError: Please, log in!"
+        End If
+    Else
+        Throw Error "FileSavingError: The file is empty!"
+    End If
+End method
+
+Define method saveFile with arguments (file, userId, ownerId)
+    Set fileName to userId + "_" + ownerId + "_" + Call UUID.randomUUID
+    Set filePath to Constants.RESOURCE_LOCATION + fileName
+    Call Files.createFile with argument filePath
+    Return fileName
+End method
