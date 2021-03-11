@@ -115,20 +115,21 @@ Define method getProductsByShop with argument shopId
     End If
 End method 
 
-Define method getProductsByShopInXML with argument shopId
+Define method getProductsByShopInXML with argument shopTitle
     Call Session.getUser
     Save it as currentUser
     If currentUser exists then
-        Call ShopsRepository.getShop with argument shopId
+        Call ShopsRepository.getShopByTitle with argument shopTitle
         Save it as shop
         If shop exists then
-            Call ProductsRepository.getAllByShop with argument shopId
+            Call ProductsRepository.getAllByShop with argument id of shop
             Save it as products
             If products exist then
+                Set encodedShopTitle to Call ESAPI.encodeForHTML with argument shopTitle
                 Set productsXmlList to 
                     Call XmlUtils.toXmlList with argument products
                 Set shopProductsXml to Object of ShopProductsXml
-                Set title of shopProductsXml to title of shop
+                Set title of shopProductsXml to encodedShopTitle
                 Set products of shopProductsXml to productsXmlList
                 Return shopProductsXml
             Else
