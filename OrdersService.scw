@@ -1,0 +1,235 @@
+import OrdersRepository from source.db.repository
+import Session from source.security.model
+import UsersRepository from source.db.repository
+import State from source.enums
+import ProductsRepository from source.db.repository
+import PayPal from application.dependencies
+import Logger from application.dependencies
+import Util from source.utils
+
+Define method getOrder with argument orderId
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call OrdersRepository.getOrderById with argument orderId
+        Save it as order
+        If order exists then
+            Call getOrderItems with argument order
+            Save it as order
+            Return order
+        Else 
+            Throw Error "NotFoundError: The order was not found"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method
+
+Define method setState with arguments (orderId, state) 
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call OrdersRepository.getOrderById with argument orderId
+        Save it as order
+        If order exists then
+            Call OrdersRepository.setState with arguments (orderId, state)
+            Save it as order
+            Return order
+        Else 
+            Throw Error "NotFoundError: The order was not found"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method 
+
+Define method saveOrder with argument orderDto
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call OrdersRepository.saveOrder with arguments 
+            (orderDto, id of currentUser)
+        Save it as order
+        Call Logger.info with argument 
+            "User with ID " + id of user + 
+              " created order by number " + number of order
+        Return order
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method 
+
+Define method getOrderItems with argument order
+    Call OrdersRepository.getItems with argument id of order
+    Save it as items
+    Set items of order to items
+    Return order
+End method 
+
+Define method getOrdersByUser with argument userId
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call UsersRepository.getUser
+        Save it as user
+        If user exists then
+            Call OrdersRepository.getAllByUser with argument userId
+            Save it as orders
+            If orders exist then 
+                Return orders
+            Else
+                Throw Error "NotFoundError: Orders were not found"
+            End If
+        Else 
+            Throw Error "NotFoundError: The user was not found"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method 
+
+Define method getOrdersByShop with argument shopId
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call ShopsRepository.getShop with argument shopId
+        Save it as shop
+        If shop exists then
+            Call OrdersRepository.getAllByShop with argument shopId
+            Save it as orders
+            If orders exist then 
+                Return orders
+            Else
+                Throw Error "NotFoundError: Orders were not found"
+            End If
+        Else 
+            Throw Error "NotFoundError: The shop was not found"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method 
+
+Define method addOrderItem with arguments (productId, quantity, order)
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        If state of order is not equal to State.DRAFT
+            Call findItemInCart with arguments (items of order, productId)
+                Save it as item
+            If item does not exist then 
+                Call ProductsRepository.getProduct with argument productId
+                Save it as product
+                If product exists then
+                    Set item to Object of ItemDto 
+                    Set quantity of item to 0
+                    Set product of item to Cast product to productDto
+                    Add item to items of order
+                Else 
+                    Throw Error "NotFoundError: The product was not found"
+                End If
+            End if
+            Set quantityOfItem to quantity of item
+            Set newQuantity to quantityOfItem + quantity
+            If newQuantity <= 0 then
+                Remove item from items of order
+            Else
+                Set quantity to item to newQuantity
+                Set subTotal of item to newQuantity * cost of product of item
+            End if
+            Call rePrice with argument order
+            If id of order is empty then 
+                Set customer of order to currentUser
+                Set state of order to State.DRAFT
+                Call OrdersRepository.saveOrder with arguments 
+                    (order, id of customer of order)
+            Else
+                Call OrdersRepository.updateOrder with argument order
+            End If
+            Return "Product was successfully added to the order"
+        Else 
+            Throw Error "OrderError: Unable to add item to placed order"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method
+
+Define method removeOrderItem with arguments (productId, order)
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call findItemInOrder with arguments (items of order, productId)
+        Save it as item
+        If item exists then 
+            Remove item from items of order
+            Call rePrice with argument order
+            Call OrdersRepository.updateOrder with argument order
+        End if
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method
+
+Define method pay with arguments (orderId, cardId)
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call OrdersRepository.getOrder with argument orderId
+        Save it as order
+        If order exists then
+            If id of currentUser is equal to id of customer of order then
+                Call CardRepository.getCard with argument cardId
+                Save it as card
+                If card exists then
+                    Set card to Call Util.decodeCardVariables 
+                        with argument card
+                    Call Logger.info with argument "User with id "
+                        + id of currentUser + "started paying for the order " 
+                        + "with id " + orderId
+                    Call PayPal.makePayment with arguments 
+                        (currency = "RUB", value = totalPrice of order, card)
+                    Save it as result
+                    If result is equal to "Success" then
+                        Set isPaid of order to true
+                        Call OrdersRepository.updateOrder with argument order
+                        Return result
+                    Else
+                        Throw Error "PaymentError: Failed to make payment"
+                    End If
+                Else 
+                    Throw Error "NotFoundError: The card was not found"
+                End If
+            Else 
+                Throw Error "AccessDeniedError: Access denied"
+            End If
+        Else 
+            Throw Error "NotFoundError: The order was not found"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method
+
+Define method findItemInOrder with arguments (items, productId)
+    Repeat with item in items
+        If id of product of item is equal to productId then
+            Return item
+        End if
+    End repeat
+    Return None
+End method
+
+Define method rePrice with argument order
+    Call calculatePrice with argument items of order
+    Save it as subTotal
+    Set totalPrice of cart to subTotal
+End method
+
+Define method calculatePrice with argument items
+    Set subTotal to 0
+    Repeat with item in items
+        Set subTotal to subTotal + subTotal of item
+    End repeat 
+    Return subTotal
+End method
