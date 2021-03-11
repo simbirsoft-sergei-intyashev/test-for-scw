@@ -56,8 +56,8 @@ End method
 
 Define method getProductsByShopInXML with argument Request
     Set Method of Request to GET
-    Set shopId to id of Param of Request
-    Call ProductsService.getProductsByShopInXML with argument shopId
+    Set shopTitle to title of Param of Request
+    Call ProductsService.getProductsByShopInXML with argument shopTitle
     Save it as result
     Set Body of Response to result
     Return Response
