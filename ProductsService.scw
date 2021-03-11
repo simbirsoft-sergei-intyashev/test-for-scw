@@ -93,28 +93,6 @@ Define method setState with arguments (productId, state)
     End If
 End method 
 
-Define method getProductsByShop with argument shopId
-    Call Session.getUser
-    Save it as currentUser
-    If currentUser exists then
-        Call ShopsRepository.getShop with argument shopId
-        Save it as shop
-        If shop exists then
-            Call ProductsRepository.getAllByShop with argument shopId
-            Save it as products
-            If products exist then
-                Return products
-            Else
-                Throw Error "NotFoundError: Products were not found"
-            End if
-        Else 
-            Throw Error "NotFoundError: The shop was not found"
-        End If
-    Else 
-        Throw Error "AuthenticationError: Please, log in!"
-    End If
-End method 
-
 Define method getProductsByShopInXML with argument shopTitle
     Call Session.getUser
     Save it as currentUser
