@@ -1,0 +1,143 @@
+import ProductsRepository from source.db.repository
+import CategoriesRepository from source.db.repository 
+import Session from source.security.model
+import Role from source.enums
+import XmlUtils from application.xml
+
+Define method getProduct with argument productId
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call ProductsRepository.getProduct with argument productId
+        Save it as product
+        If product exists then
+            Return product
+        Else 
+            Throw Error "NotFoundError: The product was not found"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method
+
+Define method getProducts
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call ProductsRepository.getProducts
+        Save it as products
+        If products exist then
+            Return products
+        Else
+            Throw Error "NotFoundError: Products were not found"
+        End if
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method
+
+Define method getProductsByCategory with argument categoryId
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call CategoriesRepository.getCategory with argument categoryId
+        Save it as category
+        If category exists then
+            Call ProductsRepository.getAllByCategory with argument categoryId
+            Save it as products
+            If products exist then
+                Return products
+            Else
+                Throw Error "NotFoundError: Products were not found"
+            End if
+        Else 
+            Throw Error "NotFoundError: The category was not found"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method 
+
+Define method saveProduct with argument productDto
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        If ((role of currentUser is equal to Role.ADMIN) or
+            (role of currentUser is equal to Role.PARTNER)) then 
+            Call ProductsRepository.saveProduct with argument productDto
+            Save it as product
+            Return product
+        Else    
+            Throw Error "AccessDeniedError: Access denied"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method
+
+Define method setState with arguments (productId, state) 
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call ProductsRepository.getProductById with argument productId
+        Save it as product
+        If product exists then
+            Call ProductsRepository.setState with arguments (productId, state)
+            Save it as order
+            Return order
+        Else 
+            Throw Error "NotFoundError: The product was not found"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method 
+
+Define method getProductsByShop with argument shopId
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call ShopsRepository.getShop with argument shopId
+        Save it as shop
+        If shop exists then
+            Call ProductsRepository.getAllByShop with argument shopId
+            Save it as products
+            If products exist then
+                Return products
+            Else
+                Throw Error "NotFoundError: Products were not found"
+            End if
+        Else 
+            Throw Error "NotFoundError: The shop was not found"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method 
+
+Define method getProductsByShopInXML with argument shopId
+    Call Session.getUser
+    Save it as currentUser
+    If currentUser exists then
+        Call ShopsRepository.getShop with argument shopId
+        Save it as shop
+        If shop exists then
+            Call ProductsRepository.getAllByShop with argument shopId
+            Save it as products
+            If products exist then
+                Set productsXmlList to 
+                    Call XmlUtils.toXmlList with argument products
+                Set shopProductsXml to Object of ShopProductsXml
+                Set title of shopProductsXml to title of shop
+                Set products of shopProductsXml to productsXmlList
+                Return shopProductsXml
+            Else
+                Throw Error "NotFoundError: Products were not found"
+            End if
+        Else 
+            Throw Error "NotFoundError: The shop was not found"
+        End If
+    Else 
+        Throw Error "AuthenticationError: Please, log in!"
+    End If
+End method 

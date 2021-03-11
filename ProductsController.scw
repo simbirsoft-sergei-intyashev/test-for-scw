@@ -1,0 +1,64 @@
+import ProductsService from source.service 
+
+Define method saveProduct with argument Request
+    Set Method of Request to POST
+    Set productDto to productDto of Body of Request
+    Call ProductsService.saveProduct with argument productDto
+    Save it as result
+    Set Body of Response to result
+    Return Response
+End method
+
+Define method getProduct with argument Request
+    Set Method of Request to GET
+    Set productId to id of Param of Request
+    Call ProductsService.getProduct with argument productId
+    Save it as result
+    Set Body of Response to result
+    Return Response
+End method
+
+Define method getProducts with argument Request
+    Set Method of Request to GET
+    Call ProductsService.getProducts
+    Save it as result
+    Set Body of Response to result
+    Return Response
+End method
+
+Define method getProductsByCategory with argument Request
+    Set Method of Request to GET
+    Set categoryId to id of Param of Request
+    Call ProductsService.getProductsByCategory with argument categoryId 
+    Save it as result
+    Set Body of Response to result
+    Return Response
+End method
+
+Define method setState with argument Request
+    Set Method of Request to PUT
+    Set productId to id of Param of Request
+    Set state to state of Body of Request
+    Call ProductsService.setState with arguments (productId, state)
+    Save it as result
+    Set Body of Response to result
+    Return Response
+End method
+
+Define method getProductsByShop with argument Request
+    Set Method of Request to GET
+    Set shopId to id of Param of Request
+    Call ProductsService.getProductsByShop with argument shopId 
+    Save it as result
+    Set Body of Response to result
+    Return Response
+End method
+
+Define method getProductsByShopInXML with argument Request
+    Set Method of Request to GET
+    Set shopId to id of Param of Request
+    Call ProductsService.getProductsByShopInXML with argument shopId
+    Save it as result
+    Set Body of Response to result
+    Return Response
+End method

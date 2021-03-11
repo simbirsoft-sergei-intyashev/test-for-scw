@@ -1,0 +1,57 @@
+import Constants from source.utils
+
+Define method getProduct with argument productId
+   Set preparedStatement to "SELECT * FROM products WHERE id = ?;"
+   Set placeholderId of preparedStatement to productId
+   Call execute with argument preparedStatement
+   Save it as result
+   Return result
+End method
+
+Define method getAllByCategory with argument categoryId
+   Set preparedStatement to "SELECT * FROM products WHERE category_id = ?;"
+   Set placeholderCategoryId of preparedStatement to categoryId
+   Call execute with argument preparedStatement
+   Save it as result
+   Return result
+End method
+
+Define method getProducts 
+   Set preparedStatement to "SELECT * FROM products;"
+   Call execute with argument preparedStatement
+   Save it as result
+   Return result
+End method
+
+Define method saveProduct with argument productDto
+   Set preparedStatement to "INSERT INTO products(title, cost," +
+      " description, category_id, deliveryTime, deliveryCost, height)" + 
+      " width, shop_id, composition, state)" + 
+      " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+   Set placeholderTitle of preparedStatement to title of productDto
+   Set placeholderCost of preparedStatement to cost of productDto
+   Set placeholderDescription of preparedStatement 
+      to description of productDto
+   Set placeholderCategoryId of preparedStatement 
+      to id of category of productDto
+   Call execute with argument preparedStatement
+   Save it as result
+   Return result
+End method
+
+Define method setState with arguments (productId, state)
+   Set preparedStatement to "UPDATE products SET state = ? WHERE id = ?;"
+   Set placeholderState of preparedStatement to state
+   Set placeholderId of preparedStatement to productId
+   Call execute with argument preparedStatement
+   Save it as result
+   Return result
+End method
+
+Define method getAllByShop with argument shopId
+   Set preparedStatement to "SELECT * FROM products WHERE shop_id = ?;"
+   Set placeholderShopId of preparedStatement to shopId
+   Call execute with argument preparedStatement
+   Save it as result
+   Return result
+End method
